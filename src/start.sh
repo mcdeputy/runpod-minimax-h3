@@ -39,7 +39,7 @@ if [ "${JUPYTER_ENABLED:-true}" != "false" ]; then
         echo "JupyterLab has no login: anyone with the pod URL can open it. Set JUPYTER_TOKEN to require one."
     fi
     jupyter-lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser \
-        --ServerApp.token="${JUPYTER_TOKEN:-}" --ServerApp.password='' \
+        --IdentityProvider.token="${JUPYTER_TOKEN:-}" \
         --ServerApp.allow_origin='*' --notebook-dir="$VOLUME" \
         > "$LOG_DIR/jupyter.log" 2>&1 &
 fi
@@ -64,9 +64,13 @@ fi
 read -ra extra <<< "${COMFY_EXTRA_ARGS:-}"
 args+=("${extra[@]}")
 
+# ComfyUI writes its own log into the user directory; link it next to
+# jupyter.log so both are in one place.
+ln -sfn "$DATA_DIR/user/comfyui.log" "$LOG_DIR/comfyui.log"
+
 echo "Starting ComfyUI: python3 main.py ${args[*]}"
 cd "$COMFYUI_DIR"
-python3 main.py "${args[@]}" 2>&1 | tee -a "$LOG_DIR/comfyui.log"
+python3 main.py "${args[@]}"
 
 # Keep the pod up if ComfyUI exits, so the log can be read from JupyterLab.
 echo "ComfyUI exited. See $LOG_DIR/comfyui.log. Container kept alive for debugging."
