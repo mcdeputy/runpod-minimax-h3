@@ -1,0 +1,6 @@
+# Everything runs inside a Linux container: keep LF line endings even when
+# edited on Windows (a CRLF start.sh fails with "bad interpreter").
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.safetensors binary

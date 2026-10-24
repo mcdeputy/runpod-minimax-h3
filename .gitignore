@@ -1,0 +1,6 @@
+.env
+*.safetensors
+*.pth
+__pycache__/
+.DS_Store
+Thumbs.db
