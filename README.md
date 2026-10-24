@@ -141,7 +141,7 @@ Pods need a host with CUDA 13.0 or higher.
 1. ~~Foundation: own repo on a pinned base image~~
 2. ~~Repo and build pipeline~~
 3. ~~Custom nodes~~
-4. Env-driven model downloads to the volume (precision, pose control, upscaler, interpolation, LoRAs) ← current
-5. Workflows (Ref2VA, pose control + Ref2VA, chaining, interpolation)
+4. ~~Env-driven model downloads to the volume (precision, pose control, upscaler, interpolation, LoRAs)~~
+5. Workflows (Ref2VA, pose control + Ref2VA, chaining, interpolation) ← current
 6. RunPod template entry
 7. Test on a cheap pod, then an RTX PRO 6000
