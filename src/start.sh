@@ -51,6 +51,13 @@ args=(
     --output-directory "$DATA_DIR/output"
     --user-directory "$DATA_DIR/user"
 )
+# Without a CORS origin, ComfyUI silently returns 403 for any request the
+# browser marks Sec-Fetch-Site: cross-site, which includes clicking the 8188
+# link in the RunPod console (runpod.io -> proxy.runpod.net). Setting one
+# disables that check; allow only this pod's own proxy address.
+if [ -n "${RUNPOD_POD_ID:-}" ]; then
+    args+=(--enable-cors-header "https://${RUNPOD_POD_ID}-8188.proxy.runpod.net")
+fi
 if [ "${USE_SAGE:-false}" = "true" ]; then
     args+=(--use-sage-attention)
 fi
