@@ -25,8 +25,13 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Check start.sh syntax
-        run: bash -n src/start.sh
+      - name: Check script syntax
+        run: bash -n src/start.sh && python3 -m py_compile src/download_models.py
+
+      # HEAD request to every model URL a download switch can pick, so a file
+      # moved or deleted upstream fails the release instead of a pod.
+      - name: Check model URLs
+        run: python3 src/download_models.py --check
 
       - uses: docker/setup-buildx-action@v3
 

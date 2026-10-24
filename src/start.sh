@@ -6,9 +6,14 @@
 # Environment variables (set on the RunPod template or at deploy time):
 #   USE_SAGE          true to launch ComfyUI with SageAttention (default false;
 #                     INT8 checkpoints + Sage can morph the end of clips)
+#   DYNAMIC_VRAM      auto (default): ComfyUI's dynamic VRAM stays on, except
+#                     with USE_SAGE=true, where it is turned off; true/false force it
 #   COMFY_EXTRA_ARGS  extra flags appended to the ComfyUI command line
 #   JUPYTER_ENABLED   false to skip JupyterLab (default true)
 #   JUPYTER_TOKEN     token JupyterLab asks for (default: no login)
+#
+# Model download switches (DOWNLOAD_*, H3_PRECISION, ...) are read by
+# download_models.py; see the README.
 
 set -uo pipefail
 
@@ -31,7 +36,14 @@ if [ ! -L "$COMFYUI_DIR/models" ]; then
     ln -s "$DATA_DIR/models" "$COMFYUI_DIR/models"
 fi
 
-# --- Model downloads (step 4) -------------------------------------------------
+# --- Model downloads ---------------------------------------------------------
+# Runs in the background so ComfyUI and JupyterLab are reachable right away
+# (a first boot can mean 50+ GB). Files appear in ComfyUI as each one
+# finishes (press R to refresh); "ALL DOWNLOADS FINISHED" in the log means
+# the set is complete. Half-downloaded files are named *.part, which ComfyUI
+# doesn't list, and resume on the next boot.
+MODELS_DIR="$DATA_DIR/models" python3 -u /opt/template/download_models.py 2>&1 \
+    | tee -a "$LOG_DIR/downloads.log" &
 
 # --- JupyterLab -------------------------------------------------------------
 if [ "${JUPYTER_ENABLED:-true}" != "false" ]; then
@@ -61,6 +73,15 @@ fi
 if [ "${USE_SAGE:-false}" = "true" ]; then
     args+=(--use-sage-attention)
 fi
+# Dynamic VRAM's weight prefetch can hit "CUDA error: an illegal memory
+# access" with H3 int8/fp8 models, mostly reported together with
+# SageAttention (Comfy-Org/ComfyUI#15271, open). The error sticks until
+# ComfyUI restarts. Turning it off costs some VRAM efficiency.
+case "${DYNAMIC_VRAM:-auto}" in
+    false) args+=(--disable-dynamic-vram) ;;
+    true)  args+=(--enable-dynamic-vram) ;;
+    *)     [ "${USE_SAGE:-false}" = "true" ] && args+=(--disable-dynamic-vram) ;;
+esac
 read -ra extra <<< "${COMFY_EXTRA_ARGS:-}"
 args+=("${extra[@]}")
 

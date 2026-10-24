@@ -56,7 +56,8 @@ RUN set -e; \
     rm -rf /tmp/node-check.log /ComfyUI/user /ComfyUI/temp /ComfyUI/output /ComfyUI/input/*
 
 COPY src/ /opt/template/
-RUN chmod +x /opt/template/start.sh
+# download_models.py hands transfers to aria2c (from the base image).
+RUN chmod +x /opt/template/start.sh && command -v aria2c
 
 # ComfyUI, JupyterLab
 EXPOSE 8188 8888
