@@ -64,13 +64,13 @@ fi
 read -ra extra <<< "${COMFY_EXTRA_ARGS:-}"
 args+=("${extra[@]}")
 
-# ComfyUI writes its own log into the user directory; link it next to
-# jupyter.log so both are in one place.
-ln -sfn "$DATA_DIR/user/comfyui.log" "$LOG_DIR/comfyui.log"
+# Copy ComfyUI's output next to jupyter.log. (A symlink to the log
+# ComfyUI-Manager announces in user/ pointed at nothing on a real pod.)
+[ -L "$LOG_DIR/comfyui.log" ] && rm -f "$LOG_DIR/comfyui.log"
 
 echo "Starting ComfyUI: python3 main.py ${args[*]}"
 cd "$COMFYUI_DIR"
-python3 main.py "${args[@]}"
+python3 main.py "${args[@]}" 2>&1 | tee -a "$LOG_DIR/comfyui.log"
 
 # Keep the pod up if ComfyUI exits, so the log can be read from JupyterLab.
 echo "ComfyUI exited. See $LOG_DIR/comfyui.log. Container kept alive for debugging."

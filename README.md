@@ -41,7 +41,7 @@ Everything that should survive a pod lives on the network volume at `/workspace`
 /workspace/ComfyUI/input    input images and videos
 /workspace/ComfyUI/output   generated videos
 /workspace/ComfyUI/user     settings and saved workflows
-/workspace/logs             comfyui.log (link to ComfyUI's own log), jupyter.log
+/workspace/logs             comfyui.log, jupyter.log
 ```
 
 ## Environment variables
